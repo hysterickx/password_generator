@@ -229,5 +229,3 @@ bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Ari
 button.place(relx = 0.5, rely = 0.85, anchor = 'c')
 
 app.mainloop()
-
-#testing
