@@ -12,12 +12,11 @@ LIT_FONT = ('Constantia', 20)
 
 
 BOX_PARAMS = {
-    "bg_color": '#ffcc66',
-    "fg_color": '#000000',
-    "hover_color": '#ffffff',
-    "text_color": '#000000',
-    "border_color": '#000000',
-    "font": ('Arial', 30)
+    "fg_color": FRM_COLOR,
+    "hover_color": TXT_COLOR_2,
+    "text_color": TXT_COLOR_2,
+    "border_color": TXT_COLOR_2,
+    "font": LIT_FONT
 }
 
 ENTRY_PARAMS = {

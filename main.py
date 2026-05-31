@@ -50,7 +50,7 @@ class GreetingsPage(ctk.CTkFrame):
 
 class MainPage(ctk.CTkFrame):
     def __init__(self, master, controller):
-        super().__init__(master, fg_color = cfg.FRM_COLOR)
+        super().__init__(master, fg_color=cfg.FRM_COLOR)
         self.controller = controller
 
         txt = cfg.APP_MESSAGES['lbl_txt']
@@ -99,54 +99,54 @@ class MainPage(ctk.CTkFrame):
             self.entrys[name] = entry
 
 
+        self.variables = {}
+        self.boxes = {}
 
+        box_data = [
+            ('digits', '1 2 3', 0.2, 0.65),
+            ('lowercase', 'a b c', 0.5, 0.65),
+            ('uppercase', 'A B C', 0.8, 0.65),
+            ('symbols', '# % &', 0.35, 0.75),
+            (
+                'exclude',
+                'Убрать похожие\n(i,I,l,L,1,!,o,O,0)',
+                0.7, 0.75
+            )
+        ]
 
+        for key, text, relx, rely in box_data:
+            self.variables[key] = ctk.BooleanVar(value=False)
 
-        check1 = ctk.BooleanVar()
-#       check2 = ctk.BooleanVar()
-#       check3 = ctk.BooleanVar()
-#       check4 = ctk.BooleanVar()
-#       check5 = ctk.BooleanVar()
-#
-#       box1 = ctk.CTkCheckBox (app, text = '1 2 3', bg_color = '#ffcc66', fg_color = '#000000', hover_color = '#ffffff',
-#       text_color = '#000000', border_color = '#000000', font = ('Arial', 30), variable = check1)
-#       box1.place(relx = 0.2, rely = 0.6, anchor = 'c')
-#
-#       box2 = ctk.CTkCheckBox (app, text = 'a b c', bg_color = '#ffcc66', fg_color = '#000000', hover_color = '#ffffff',
-#       text_color = '#000000', border_color = '#000000', font = ('Arial', 30), variable = check2)
-#       box2.place(relx = 0.5, rely = 0.6, anchor = 'c')
-#
-#       box3 = ctk.CTkCheckBox (app, text = 'A B C', bg_color = '#ffcc66', fg_color = '#000000', hover_color = '#ffffff',
-#       text_color = '#000000', border_color = '#000000', font = ('Arial', 30), variable = check3)
-#       box3.place(relx = 0.8, rely = 0.6, anchor = 'c')
-#
-#       box4 = ctk.CTkCheckBox (app, text = '# % &', bg_color = '#ffcc66', fg_color = '#000000', hover_color = '#ffffff',
-#       text_color = '#000000', border_color = '#000000', font = ('Arial', 30), variable = check4)
-#       box4.place(relx = 0.25, rely = 0.7, anchor = 'c')
-#
-#       box5 = ctk.CTkCheckBox (app, text = 'Убрать похожие\n(i,I,l,L,1,!,o,O,0)', bg_color = '#ffcc66', fg_color = '#000000', hover_color = '#ffffff',
-#       text_color = '#000000', border_color = '#000000', font = ('Arial', 25), variable = check5)
-#       box5.place(relx = 0.70, rely = 0.7, anchor = 'c')
+            box = ctk.CTkCheckBox(
+                self,
+                text=text,
+                variable=self.variables[key],
+                **cfg.BOX_PARAMS
+            )
+            box.place(
+                relx=relx,
+                rely=rely,
+                anchor='c'
+            )
 
+            self.boxes[key] = box
 
-
-
-
-
-
-
-
-#
-
-
-
-
-
+        button = ctk.CTkButton(
+            self,
+            text='Готово!',
+            command=lambda: print('sss'),
+            **cfg.BTN_PARAMS
+        )
+        button.place(
+            relx=0.5,
+            rely=0.9,
+            anchor='c'
+        )
 
 
 class MessagePage(ctk.CTkFrame):
     def __init__(self, master, controller):
-        super().__init__(master, fg_color = cfg.FRM_COLOR)
+        super().__init__(master, fg_color=cfg.FRM_COLOR)
         self.controller = controller
 
         self.message_label = ctk.CTkLabel(
@@ -360,14 +360,3 @@ if __name__ == "__main__":
 #    else:
 #        create(check1, check2, check3, check4, check5, int(count), int(lenght))
 #
-#    button = ctk.CTkButton (app, width = 300, height = 30, corner_radius = 20, text = 'Дальше', text_color = '#000000',
-#    bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Arial', 20, 'bold'), command=lambda: check_input(int(check1.get()), int(check2.get()), int(check3.get()), int(check4.get()), int(check5.get()), entry1.get(), entry2.get()))
-#    button.place(relx = 0.5, rely = 0.9, anchor = 'c')
-#
-#    button = ctk.CTkButton (app, width = 100, height = 30, corner_radius = 20, text = 'Выбрать все', text_color = '#000000',
-#    bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Arial', 20, 'bold'), command = lambda: select_all(box1, box2, box3, box4, box5))
-#    button.place(relx = 0.3, rely = 0.8, anchor = 'c')
-#
-#    button = ctk.CTkButton (app, width = 100, height = 30, corner_radius = 20, text = 'Убрать все', text_color = '#000000',
-#    bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Arial', 20, 'bold'), command = lambda: deselect_all(box1, box2, box3, box4, box5))
-#    button.place(relx = 0.7, rely = 0.8, anchor = 'c')
