@@ -10,7 +10,6 @@ BIG_FONT = ('Constantia', 27)
 MID_FONT = ('Constantia', 25)
 LIT_FONT = ('Constantia', 20)
 
-
 BOX_PARAMS = {
     "fg_color": FRM_COLOR,
     "hover_color": TXT_COLOR_2,
@@ -76,4 +75,13 @@ APP_MESSAGES = {
         '(Введите значение от 5 до 20)',
         'Какие символы использовать?'
     ]
+}
+
+ERROR_MESSAGES = {
+    'not_digit': 'В поле не введено число',
+    'too_low_count': 'Нужен хотя бы 1 пароль',
+    'too_high_count': 'Допускается не больше 10 паролей',
+    'too_low_length': 'Длина пароля не должна быть меньше 5 символов',
+    'too_high_length': 'Допускается длина пароля не более 20 символов',
+    'empty_boxes': 'Не выбран ни один вид символов'
 }

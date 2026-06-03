@@ -32,7 +32,7 @@ class GreetingsPage(ctk.CTkFrame):
 
         button_data = [
             ('Выйти', self.controller.exit_app),
-            ('Вперёд!', lambda: self.controller.switch_to('MainPage'))
+            ('Вперёд!', self.controller.create_game)
         ]
 
         for idx, (text, command) in enumerate(button_data):
@@ -80,8 +80,8 @@ class MainPage(ctk.CTkFrame):
         self.entrys = {}
 
         entry_data = [
-            ('count_entry', 0.27),
-            ('lenght_entry', 0.48)
+            ('count', 0.27),
+            ('length', 0.48)
         ]
 
         for name, rely in entry_data:
@@ -104,11 +104,11 @@ class MainPage(ctk.CTkFrame):
 
         box_data = [
             ('digits', '1 2 3', 0.2, 0.65),
-            ('lowercase', 'a b c', 0.5, 0.65),
-            ('uppercase', 'A B C', 0.8, 0.65),
+            ('lowercases', 'a b c', 0.5, 0.65),
+            ('uppercases', 'A B C', 0.8, 0.65),
             ('symbols', '# % &', 0.35, 0.75),
             (
-                'exclude',
+                'excludes',
                 'Убрать похожие\n(i,I,l,L,1,!,o,O,0)',
                 0.7, 0.75
             )
@@ -134,7 +134,7 @@ class MainPage(ctk.CTkFrame):
         button = ctk.CTkButton(
             self,
             text='Готово!',
-            command=lambda: print('sss'),
+            command=self.send_input,
             **cfg.BTN_PARAMS
         )
         button.place(
@@ -142,6 +142,50 @@ class MainPage(ctk.CTkFrame):
             rely=0.9,
             anchor='c'
         )
+
+    def update_ui(self):
+        self.clear_count_entry
+        self.entrys['count'].insert(0, '3')
+
+        self.clear_length_entry
+        self.entrys['length'].insert(0, '15')
+
+        for name, var in self.variables.items():
+            var.set(name not in ['symbols', 'excludes'])
+
+    def clear_count_entry(self):
+        self.entrys['count'].delete(0, 'end')
+        self.entrys['count'].focus_set()
+
+    def clear_length_entry(self):
+        self.entrys['length'].delete(0, 'end')
+        self.entrys['length'].focus_set()
+
+    def send_input(self):
+        user_input = {
+            'count': self.entrys['count'].get(),
+            'length': self.entrys['length'].get(),
+            'digits': self.variables['digits'].get(),
+            'lowercases': self.variables['lowercases'].get(),
+            'uppercases': self.variables['uppercases'].get(),
+            'symbols': self.variables['symbols'].get(),
+            'excludes': self.variables['excludes'].get()
+        }
+
+        self.controller.transfer_data(user_input)
+
+    def give_feedback(self, status, passwords):
+        if status in cfg.ERROR_MESSAGES:
+            error_message = CTkMessagebox(
+                self.controller,
+                message=cfg.ERROR_MESSAGES[status],
+                **cfg.MSG_PARAMS
+            )
+            return
+        print('sss')
+
+
+
 
 
 class MessagePage(ctk.CTkFrame):
@@ -161,10 +205,71 @@ class MessagePage(ctk.CTkFrame):
             anchor='c'
         )
 
-    def change_text(self, status):
+    def change_message(self, status):
         self.message_label.configure(
             text=choice(cfg.APP_MESSAGES[status])
         )
+
+class MainLogic:
+    def check_input(self, user_input):
+        if (not user_input['count'].isdigit() or
+        not user_input['length'].isdigit()):
+            return 'not_digit'
+
+        count = int(user_input['count'])
+        length = int(user_input['length'])
+
+        if count == 0:
+            return 'too_low_count'
+        if count > 10:
+            return 'too_high_count'
+        if length < 5:
+            return 'too_low_length'
+        if length > 20:
+            return 'too_high_length'
+
+        keys = ['digits', 'lowercases', 'uppercases', 'symbols']
+
+        if not any(user_input[key] for key in keys):
+            return 'empty_boxes'
+
+        return None
+
+    def generate(self, user_input):
+        error_status = self.check_input(user_input)
+        if error_status:
+            return error_status, []
+
+        pool = ''
+        if user_input['digits']:
+            pool += string.digits
+        if user_input['lowercases']:
+            pool += string.ascii_lowercase
+        if user_input['uppercases']:
+            pool += string.ascii_uppercase
+        if user_input['symbols']:
+            pool += "#%&@$^*!?+=-"
+
+        if user_input['excludes']:
+            bad_chars = "iIlL1!oO0"
+            clean_pool = ""
+
+            for char in pool:
+                if char not in bad_chars:
+                    clean_pool += char
+
+            pool = clean_pool
+
+        passwords = []
+        count = int(user_input['count'])
+        length = int(user_input['length'])
+
+        for _ in range(count):
+            password = "".join(choice(pool) for _ in range(length))
+            passwords.append(password)
+
+        return 'success', passwords
+
 
 class MainApp(ctk.CTk):
     def __init__(self):
@@ -177,6 +282,8 @@ class MainApp(ctk.CTk):
 
         self.main_frame = ctk.CTkFrame(self)
         self.main_frame.pack(fill='both', expand=True)
+
+        self.main_logic = MainLogic()
 
         self.pages = {}
         self.current_frame = None
@@ -195,9 +302,20 @@ class MainApp(ctk.CTk):
         self.current_frame.pack(fill="both", expand=True)
 
     def exit_app(self):
-        self.pages['MessagePage'].change_text('farewell')
+        self.pages['MessagePage'].change_message('farewell')
         self.switch_to('MessagePage')
         self.after(3000, self.destroy)
+
+    def create_game(self):
+        self.pages['MessagePage'].change_message('loading')
+        self.switch_to('MessagePage')
+        self.pages['MainPage'].update_ui()
+        self.after(3000, lambda: self.switch_to("MainPage"))
+
+    def transfer_data(self, user_input):
+        status, passwords = self.main_logic.generate(user_input)
+        self.pages['MainPage'].give_feedback(status, passwords)
+
 
 if __name__ == "__main__":
     app = MainApp()
@@ -205,37 +323,8 @@ if __name__ == "__main__":
 
 
 
-#digits = '0123456789'
-#lowercase_letters = 'abcdefghijklmnopqrstuvwxyz'
-#uppercase_letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-#punctuation = '!#$%&*+-=?@^_'
-#waitings = ['Мне нужно\n несколько секундочек...', 'Дайте мне\n немножечко времени...', 'Почти готово...', 'Секундочку...']
-#
-#def clear_all():
-#    for widget in app.winfo_children():
-#        widget.destroy()
-#
-#def select_all(box1, box2, box3, box4, box5):
-#    for check in [box1, box2, box3, box4, box5]:
-#        check.select()
-#
-#def deselect_all(box1, box2, box3, box4, box5):
-#    for check in [box1, box2, box3, box4, box5]:
-#        check.deselect()
-#
-#def end():
-#    clear_all()
-#    label = ctk.CTkLabel (app, text = 'До новых встреч!', bg_color = '#ffcc66',
-#    text_color = '#000000', font = ('Arial', 23, 'bold'))
-#    label.place(relx = 0.5, rely = 0.5, anchor = 'c')
-#    app.after(5000, app.destroy)
-#
-#def repeat():
-#    clear_all()
-#    label = ctk.CTkLabel (app, text = 'Запускаю процесс...', bg_color = '#ffcc66',
-#    text_color = '#000000', font = ('Arial', 23, 'bold'))
-#    label.place(relx = 0.5, rely = 0.5, anchor = 'c')
-#    app.after(5000, filters)
+
+
 #
 #def result(passwords):
 #    clear_all()
@@ -309,54 +398,3 @@ if __name__ == "__main__":
 #    text_color = '#000000', font = ('Arial', 30, 'bold'))
 #    label.place(relx = 0.5, rely = 0.5, anchor = 'c')
 #    app.after (5000, lambda: result(passwords))
-#
-#def check_input(check1, check2, check3, check4, check5, count, lenght):
-#    value = 0
-#    for i in [check1, check2, check3, check4]:
-#        if i == 0:
-#            value += 1
-#    if value == 4:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Не выбран ни один тип символов'
-#        )
-#    elif len(count) == 0 or len(lenght) == 0:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Не все значения введены'
-#        )
-#    elif count.isdigit() == False or lenght.isdigit() == False:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Для ввода допускаются только циферки'
-#        )
-#    elif int(count) < 1:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Нужен хотя бы 1 пароль'
-#        )
-#    elif int(lenght) < 5:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Недостаточная длина пароля'
-#        )
-#    elif int(count) > 10:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Слишком много паролей'
-#        )
-#    elif int(lenght) > 20:
-#        CTkMessagebox(
-#            app,
-#            **cfg.MSG_PARAMS,
-#            message='Слишком длинный пароль'
-#        )
-#    else:
-#        create(check1, check2, check3, check4, check5, int(count), int(lenght))
-#
