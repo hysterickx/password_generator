@@ -8,7 +8,7 @@ BTN_COLOR_3 = '#000000'
 
 BIG_FONT = ('Constantia', 27)
 MID_FONT = ('Constantia', 25)
-LIT_FONT = ('Constantia', 20)
+LIT_FONT = ('Constantia', 18)
 
 BOX_PARAMS = {
     "fg_color": FRM_COLOR,
@@ -46,6 +46,16 @@ BTN_PARAMS = {
     "hover_color": BTN_COLOR_2,
     "text_color": BTN_COLOR_3,
     "font": ('Constantia', 20)
+}
+
+BTN_PARAMS_2 = {
+    "width": 50,
+    "height": 20,
+    "corner_radius": 10,
+    "fg_color": BTN_COLOR_1,
+    "hover_color": BTN_COLOR_2,
+    "text_color": BTN_COLOR_3,
+    "font": ('Constantia', 18)
 }
 
 APP_MESSAGES = {

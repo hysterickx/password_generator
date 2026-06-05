@@ -3,6 +3,7 @@ from random import choice
 from CTkMessagebox import CTkMessagebox
 from pyperclip import copy
 import config as cfg
+import string
 
 class GreetingsPage(ctk.CTkFrame):
     def __init__(self, master, controller):
@@ -182,10 +183,8 @@ class MainPage(ctk.CTkFrame):
                 **cfg.MSG_PARAMS
             )
             return
-        print('sss')
 
-
-
+        self.controller.transfer_final_data(passwords)
 
 
 class MessagePage(ctk.CTkFrame):
@@ -209,6 +208,90 @@ class MessagePage(ctk.CTkFrame):
         self.message_label.configure(
             text=choice(cfg.APP_MESSAGES[status])
         )
+
+class FinalPage(ctk.CTkFrame):
+    def __init__(self, master, controller):
+        super().__init__(master, fg_color=cfg.FRM_COLOR)
+        self.controller = controller
+
+        self.frames = {}
+
+        frame_data = [
+            ('result', 0, 0.3, 0.7),
+            ('copy', 0, 0.3, 0.7)
+        ]
+
+        for name, coord_1, coord_2, coord_3:
+
+
+        self.result_frame = ctk.CTkFrame(
+            self,
+            fg_color=cfg.FRM_COLOR
+        )
+
+        self.result_frame.place(
+            relx=0,
+            rely=0,
+            relwidth=0.7,
+            relheight=0.7
+        )
+
+        self.copy_frame = ctk.CTkFrame(
+            self,
+            fg_color=cfg.FRM_COLOR
+        )
+
+        self.copy_frame.place(
+            relx=0.7,
+            rely=0,
+            relwidth=0.3,
+            relheight=0.7
+        )
+
+        label = ctk.CTkLabel(
+            self,
+            text='Хотите повторить?',
+            text_color=cfg.TXT_COLOR_1,
+            font=cfg.BIG_FONT
+        )
+
+        label.place(
+            relx=0.5,
+            rely=0.75,
+            anchor='c'
+        )
+
+    def get_result(self, passwords):
+        for key in passwords:
+            label = ctk.CTkLabel(
+                self.result_frame,
+                text=key,
+                text_color=cfg.TXT_COLOR_2,
+                font=cfg.LIT_FONT
+            )
+
+            label.pack(
+                side='top',
+                expand=True,
+                fill='both'
+            )
+
+            button = ctk.CTkButton(
+                self.copy_frame,
+                text='copy',
+                #command=lambda l = label.cget('text'): copy(l),
+                command=lambda k=key: copy(k),
+                **cfg.BTN_PARAMS_2
+            )
+
+            button.pack(
+                side='top',
+                expand=True
+            )
+
+
+
+
 
 class MainLogic:
     def check_input(self, user_input):
@@ -287,7 +370,7 @@ class MainApp(ctk.CTk):
 
         self.pages = {}
         self.current_frame = None
-        for F in (GreetingsPage, MainPage, MessagePage):
+        for F in (GreetingsPage, MainPage, MessagePage, FinalPage):
             page_name = F.__name__
             self.pages[page_name] = F(
                 master=self.main_frame,
@@ -315,6 +398,12 @@ class MainApp(ctk.CTk):
     def transfer_data(self, user_input):
         status, passwords = self.main_logic.generate(user_input)
         self.pages['MainPage'].give_feedback(status, passwords)
+
+    def transfer_final_data(self, passwords):
+        self.pages['MessagePage'].change_message('waiting')
+        self.switch_to('MessagePage')
+        self.pages['FinalPage'].get_result(passwords)
+        self.after(3000, lambda: self.switch_to('FinalPage'))
 
 
 if __name__ == "__main__":
