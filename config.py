@@ -38,7 +38,7 @@ MSG_PARAMS = {
     "button_text_color": BTN_COLOR_3
 }
 
-BTN_PARAMS = {
+BTN_PARAMS_1 = {
     "width": 50,
     "height": 40,
     "corner_radius": 50,
@@ -52,8 +52,8 @@ BTN_PARAMS_2 = {
     "width": 50,
     "height": 20,
     "corner_radius": 10,
-    "fg_color": BTN_COLOR_1,
-    "hover_color": BTN_COLOR_2,
+    "fg_color": BTN_COLOR_2,
+    "hover_color": BTN_COLOR_1,
     "text_color": BTN_COLOR_3,
     "font": ('Constantia', 18)
 }
@@ -88,7 +88,8 @@ APP_MESSAGES = {
 }
 
 ERROR_MESSAGES = {
-    'not_digit': 'В поле не введено число',
+    'not_digit_count': 'В первом поле не введено число',
+    'not_digit_length': 'Во втором поле не введено число',
     'too_low_count': 'Нужен хотя бы 1 пароль',
     'too_high_count': 'Допускается не больше 10 паролей',
     'too_low_length': 'Длина пароля не должна быть меньше 5 символов',

@@ -5,9 +5,10 @@ from pyperclip import copy
 import config as cfg
 import string
 
+
 class GreetingsPage(ctk.CTkFrame):
     def __init__(self, master, controller):
-        super().__init__(master, fg_color = cfg.FRM_COLOR)
+        super().__init__(master, fg_color=cfg.FRM_COLOR)
         self.controller = controller
 
         label_data = [
@@ -41,13 +42,14 @@ class GreetingsPage(ctk.CTkFrame):
                 self,
                 text=text,
                 command=command,
-                **cfg.BTN_PARAMS
+                **cfg.BTN_PARAMS_1
             )
             button.place(
                 relx=0.3 + (idx * 0.4),
                 rely=0.85,
                 anchor='c'
             )
+
 
 class MainPage(ctk.CTkFrame):
     def __init__(self, master, controller):
@@ -75,7 +77,7 @@ class MainPage(ctk.CTkFrame):
             label.place(
                 relx=0.5,
                 rely=rely,
-                anchor = 'c'
+                anchor='c'
             )
 
         self.entrys = {}
@@ -98,7 +100,6 @@ class MainPage(ctk.CTkFrame):
             )
 
             self.entrys[name] = entry
-
 
         self.variables = {}
         self.boxes = {}
@@ -136,7 +137,7 @@ class MainPage(ctk.CTkFrame):
             self,
             text='Готово!',
             command=self.send_input,
-            **cfg.BTN_PARAMS
+            **cfg.BTN_PARAMS_1
         )
         button.place(
             relx=0.5,
@@ -145,22 +146,11 @@ class MainPage(ctk.CTkFrame):
         )
 
     def update_ui(self):
-        self.clear_count_entry
-        self.entrys['count'].insert(0, '3')
+        for name in self.entrys:
+            self.entrys[name].delete(0, 'end')
 
-        self.clear_length_entry
-        self.entrys['length'].insert(0, '15')
-
-        for name, var in self.variables.items():
-            var.set(name not in ['symbols', 'excludes'])
-
-    def clear_count_entry(self):
-        self.entrys['count'].delete(0, 'end')
-        self.entrys['count'].focus_set()
-
-    def clear_length_entry(self):
-        self.entrys['length'].delete(0, 'end')
-        self.entrys['length'].focus_set()
+        for name in self.variables:
+            self.variables[name].set(False)
 
     def send_input(self):
         user_input = {
@@ -182,6 +172,27 @@ class MainPage(ctk.CTkFrame):
                 message=cfg.ERROR_MESSAGES[status],
                 **cfg.MSG_PARAMS
             )
+
+            if status in [
+                'not_digit_count',
+                'too_low_count',
+                'too_high_count'
+            ]:
+                self.wait_window(error_message)
+                self.entrys['count'].delete(0, 'end')
+                self.entrys['count'].focus_force()
+                return
+
+            if status in [
+                'not_digit_length',
+                'too_low_length',
+                'too_high_length'
+            ]:
+                self.wait_window(error_message)
+                self.entrys['length'].delete(0, 'end')
+                self.entrys['length'].focus_force()
+                return
+
             return
 
         self.controller.transfer_final_data(passwords)
@@ -209,49 +220,39 @@ class MessagePage(ctk.CTkFrame):
             text=choice(cfg.APP_MESSAGES[status])
         )
 
+
 class FinalPage(ctk.CTkFrame):
     def __init__(self, master, controller):
         super().__init__(master, fg_color=cfg.FRM_COLOR)
         self.controller = controller
 
         self.frames = {}
+        self.widgets = []
 
         frame_data = [
-            ('result', 0, 0.3, 0.7),
-            ('copy', 0, 0.3, 0.7)
+            ('result', 0, 0.7),
+            ('copy', 0.7, 0.3)
         ]
 
-        for name, coord_1, coord_2, coord_3:
+        for name, relx, relwidth in frame_data:
+            frame = ctk.CTkFrame(
+                self,
+                fg_color=cfg.FRM_COLOR
+            )
 
+            frame.place(
+                relx=relx,
+                rely=0,
+                relwidth=relwidth,
+                relheight=0.7
+            )
 
-        self.result_frame = ctk.CTkFrame(
-            self,
-            fg_color=cfg.FRM_COLOR
-        )
-
-        self.result_frame.place(
-            relx=0,
-            rely=0,
-            relwidth=0.7,
-            relheight=0.7
-        )
-
-        self.copy_frame = ctk.CTkFrame(
-            self,
-            fg_color=cfg.FRM_COLOR
-        )
-
-        self.copy_frame.place(
-            relx=0.7,
-            rely=0,
-            relwidth=0.3,
-            relheight=0.7
-        )
+            self.frames[name] = frame
 
         label = ctk.CTkLabel(
             self,
             text='Хотите повторить?',
-            text_color=cfg.TXT_COLOR_1,
+            text_color=cfg.TXT_COLOR_2,
             font=cfg.BIG_FONT
         )
 
@@ -261,12 +262,30 @@ class FinalPage(ctk.CTkFrame):
             anchor='c'
         )
 
+        button_data = [
+            ('Не хочу', self.controller.exit_app),
+            ('Давай!', self.controller.create_game)
+        ]
+
+        for idx, (text, command) in enumerate(button_data):
+            button = ctk.CTkButton(
+                self,
+                text=text,
+                command=command,
+                **cfg.BTN_PARAMS_1
+            )
+            button.place(
+                relx=0.3 + (idx * 0.4),
+                rely=0.9,
+                anchor='c'
+            )
+
     def get_result(self, passwords):
         for key in passwords:
             label = ctk.CTkLabel(
-                self.result_frame,
+                self.frames['result'],
                 text=key,
-                text_color=cfg.TXT_COLOR_2,
+                text_color=cfg.TXT_COLOR_1,
                 font=cfg.LIT_FONT
             )
 
@@ -277,9 +296,8 @@ class FinalPage(ctk.CTkFrame):
             )
 
             button = ctk.CTkButton(
-                self.copy_frame,
+                self.frames['copy'],
                 text='copy',
-                #command=lambda l = label.cget('text'): copy(l),
                 command=lambda k=key: copy(k),
                 **cfg.BTN_PARAMS_2
             )
@@ -289,15 +307,23 @@ class FinalPage(ctk.CTkFrame):
                 expand=True
             )
 
+            self.widgets.append(label)
+            self.widgets.append(button)
 
+    def update_ui(self):
+        for widget in self.widgets:
+            widget.destroy()
 
+        self.widgets.clear()
 
 
 class MainLogic:
     def check_input(self, user_input):
-        if (not user_input['count'].isdigit() or
-        not user_input['length'].isdigit()):
-            return 'not_digit'
+        if not user_input['count'].isdigit():
+            return 'not_digit_count'
+
+        if not user_input['length'].isdigit():
+            return 'not_digit_length'
 
         count = int(user_input['count'])
         length = int(user_input['length'])
@@ -370,9 +396,9 @@ class MainApp(ctk.CTk):
 
         self.pages = {}
         self.current_frame = None
-        for F in (GreetingsPage, MainPage, MessagePage, FinalPage):
-            page_name = F.__name__
-            self.pages[page_name] = F(
+        for page_class in (GreetingsPage, MainPage, MessagePage, FinalPage):
+            page_name = page_class.__name__
+            self.pages[page_name] = page_class(
                 master=self.main_frame,
                 controller=self
             )
@@ -393,6 +419,7 @@ class MainApp(ctk.CTk):
         self.pages['MessagePage'].change_message('loading')
         self.switch_to('MessagePage')
         self.pages['MainPage'].update_ui()
+        self.pages['FinalPage'].update_ui()
         self.after(3000, lambda: self.switch_to("MainPage"))
 
     def transfer_data(self, user_input):
@@ -409,81 +436,3 @@ class MainApp(ctk.CTk):
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()
-
-
-
-
-
-#
-#def result(passwords):
-#    clear_all()
-#    frame1 = ctk.CTkFrame(app, bg_color = '#ffcc66', fg_color = '#ffcc66')
-#    frame1.place(relx = 0, rely = 0, relwidth = 0.7, relheight = 0.7)
-#
-#    frame2 = ctk.CTkFrame(app, bg_color = '#ffcc66', fg_color = '#ffcc66')
-#    frame2.place(relx = 0.7, rely = 0, relwidth = 0.3, relheight = 0.7)
-#
-#    def copy_all():
-#        copy (passwords)
-#        button2.configure (text = 'Скопировано', text_color_disabled = '#000000', state = 'disabled', fg_color = '#ffff99')
-#        button2.after(1000, lambda: button2.configure(text = 'Copy all', state = 'normal', fg_color = '#ffffff', text_color = '#000000'))
-#
-#    def copy_action (text, button):
-#        copy(text)
-#        button.configure (text = '✅', text_color_disabled = '#000000', state = 'disabled', fg_color = '#ffff99')
-#        button.after(1000, lambda: button.configure(text = 'Copy', state = 'normal', fg_color = '#ffffff', text_color = '#000000'))
-#
-#    for i in passwords:
-#        label = ctk.CTkLabel (frame1, text = i, bg_color = '#ffcc66',
-#        text_color = '#000000', font = ('Arial', 23, 'bold'))
-#        label.pack(side = 'top', expand = True, fill = 'both')
-#
-#        button = ctk.CTkButton (frame2, width = 120, height = 30, text = 'Copy', bg_color = '#ffcc66', fg_color = '#ffffff',
-#        hover_color = '#996633', corner_radius = 40,  text_color = '#000000', font = ('Arial', 18, 'bold'))
-#        button.configure(command = lambda text = i, but = button: copy_action(text, but))
-#        button.pack(side = 'top', expand = True)
-#
-#    button2 = ctk.CTkButton (app, width = 200, height = 30, corner_radius = 20, text = 'Copy all', text_color = '#000000',
-#    bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Arial', 20, 'bold'), command = copy_all)
-#    button2.place(relx = 0.5, rely = 0.75, anchor = 'c')
-#
-#    label2 = ctk.CTkLabel (app, text = 'Хотите повторить?', bg_color = '#ffcc66',
-#    text_color = '#000000', font = ('Arial', 23, 'bold'))
-#    label2.place(relx = 0.5, rely = 0.85, anchor = 'c')
-#
-#    button3 = ctk.CTkButton (app, width = 100, height = 50, corner_radius = 40, text = 'Да', text_color = '#000000',
-#    bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Arial', 20, 'bold'), command = repeat)
-#    button3.place(relx = 0.35, rely = 0.95, anchor = 'c')
-#
-#    button4 = ctk.CTkButton (app, width = 100, height = 50, corner_radius = 40, text = 'Нет', text_color = '#000000',
-#    bg_color = '#ffcc66', fg_color = '#ffffff', hover_color = '#996633', font= ('Arial', 20, 'bold'), command = end)
-#    button4.place(relx = 0.65, rely = 0.95, anchor = 'c')
-#
-#def create(check1, check2, check3, check4, check5, count, lenght):
-#    clear_all()
-#
-#    chars = ''
-#    symbols = [digits, lowercase_letters, uppercase_letters, punctuation]
-#    passwords = []
-#    value = 0
-#
-#    for i in [check1, check2, check3, check4]:
-#        if i == 1:
-#            chars += symbols[value]
-#        value += 1
-#
-#    if check5 == 1:
-#         for j in 'i, I, l, L, 1, !, o, O, 0':
-#            if j in chars:
-#                chars = chars.replace(j, '')
-#
-#    for k in range (count):
-#        password = ''
-#        for m in range (lenght):
-#            password += choice(chars)
-#        passwords.append(password)
-#
-#    label = ctk.CTkLabel (app, text = choice(waitings), bg_color = '#ffcc66',
-#    text_color = '#000000', font = ('Arial', 30, 'bold'))
-#    label.place(relx = 0.5, rely = 0.5, anchor = 'c')
-#    app.after (5000, lambda: result(passwords))
