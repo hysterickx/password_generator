@@ -148,12 +148,34 @@ DELAY_MESSAGES = {
 }
 
 ERROR_MESSAGES = {
-    'not_digit_count': 'В первом поле не введено число',
-    'not_digit_length': 'Во втором поле не введено число',
-    'too_low_count': 'Нужен хотя бы 1 пароль',
-    'too_high_count': 'Допускается не больше 10 паролей',
-    'too_low_length': 'Длина пароля не должна быть меньше 5 символов',
-    'too_high_length': 'Допускается длина пароля не более 20 символов',
-    'empty_boxes': 'Не выбран ни один вид символов'
+    'not_digit_count': {
+        'message': 'В первом поле не введено число',
+        'field': 'count'
+    },
+    'not_digit_length': {
+        'message': 'Во втором поле не введено число',
+        'field': 'length'
+    },
+    'too_low_count': {
+        'message': 'Нужен хотя бы 1 пароль',
+        'field': 'count'
+    },
+    'too_high_count': {
+        'message': 'Допускается не больше 10 паролей',
+        'field': 'count'
+    },
+    'too_low_length': {
+        'message': 'Длина пароля не должна быть меньше 5 символов',
+        'field': 'length'
+    },
+    'too_high_length': {
+        'message': 'Допускается длина пароля не более 20 символов',
+        'field': 'length'
+    },
+    'empty_boxes': {
+        'message': 'Не выбран ни один вид символов',
+        'field': 'box'
+    }
 }
+
 

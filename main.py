@@ -95,14 +95,24 @@ class MainPage(ctk.CTkFrame):
             'transfer_data', user_input
         )
 
-    def show_error(self, status):
+    def show_entry_message(self, status, entry_key):
+        text = cfg.ERROR_MESSAGES[status]['message']
         error_message = CTkMessagebox(
             app,
-            message=cfg.ERROR_MESSAGES[status],
+            message=text,
             **cfg.MSG_PARAMS
         )
         self.wait_window(error_message)
-        self.update_ui()
+        self.entrys[entry_key].delete(0, 'end')
+        self.entrys[entry_key].focus()
+
+    def show_box_message(self, status):
+        text = cfg.ERROR_MESSAGES[status]['message']
+        error_message = CTkMessagebox(
+            app,
+            message=text,
+            **cfg.MSG_PARAMS
+        )
 
     def update_ui(self):
         for name in self.entrys:
@@ -136,7 +146,10 @@ class FinalPage(ctk.CTkFrame):
         frame_data = cfg.FINAL_PAGE_DATA['frames']
 
         for name, relx, rely, relwidth, relheight in frame_data:
-            frame = ctk.CTkFrame(self)
+            frame = ctk.CTkFrame(
+                self,
+                fg_color=cfg.COLOR_DARK
+            )
             frame.place(
                 relx=relx,
                 rely=rely,
@@ -211,7 +224,10 @@ class MainLogic:
         if length > 20:
             return 'too_high_length'
 
-        keys = ['digits', 'lowercases', 'uppercases', 'symbols']
+        keys = [
+            'digits', 'lowercases',
+            'uppercases', 'symbols'
+        ]
 
         if not any(user_input[key] for key in keys):
             return 'empty_boxes'
@@ -234,7 +250,7 @@ class MainLogic:
             pool += "#%&@$^*!?+=-"
 
         if user_input['excludes']:
-            bad_chars = "iIlL1!oO0"
+            bad_chars = "iIlL1!oO0j"
             clean_pool = ""
 
             for char in pool:
@@ -248,7 +264,9 @@ class MainLogic:
         length = int(user_input['length'])
 
         for _ in range(count):
-            password = "".join(choice(pool) for _ in range(length))
+            password = "".join(
+                choice(pool) for _ in range(length)
+            )
             passwords.append(password)
 
         return passwords
@@ -265,12 +283,10 @@ class MainApp(ctk.CTk):
 
         self.main_frame = ctk.CTkFrame(self)
         self.main_frame.pack(fill='both', expand=True)
-
         self.main_logic = MainLogic()
 
         self.pages = {}
         self.current_frame = None
-
         page_types = [
             ("GreetingsPage", GreetingsPage),
             ("MainPage", MainPage),
@@ -292,8 +308,17 @@ class MainApp(ctk.CTk):
 
     def transfer_data(self, user_input):
         result = self.main_logic.create_passwords(user_input)
+
         if isinstance(result, str):
-            self.pages['MainPage'].show_error(result)
+            entry_key = cfg.ERROR_MESSAGES[result]['field']
+            if entry_key in ('count', 'length'):
+                self.pages['MainPage'].show_entry_message(
+                    result, entry_key
+                )
+            else:
+                self.pages['MainPage'].show_box_message(
+                    result
+                )
         else:
             self.send_result(result)
 
